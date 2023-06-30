@@ -78,11 +78,14 @@ class DavScreenshotFailureContext implements Context {
       $basename = 'screenshot';
     }
     $basename .= '-' . date('Ymd_Hi');
-    if (!function_exists('file_prepare_directory')) {
-      printf('*** not running inside a Drupal environment is not fully supported. Ensure the local screenshot target folder exists yourself ***');
+    if (class_exists('\Drupal') && method_exists('\Drupal', 'service') && interface_exists('\Drupal\Core\File\FileSystemInterface')) {
+      \Drupal::service('file_system')->prepareDirectory($this->failurePath, \Drupal\Core\File\FileSystemInterface::CREATE_DIRECTORY);
+    }
+    elseif (function_exists('file_prepare_directory')) {
+      file_prepare_directory($this->failurePath, FILE_CREATE_DIRECTORY);
     }
     else {
-      file_prepare_directory($this->failurePath, FILE_CREATE_DIRECTORY);
+      printf('*** not running inside a Drupal environment is not fully supported. Ensure the local screenshot target folder exists yourself ***');
     }
     $basename = $this->failurePath . '/' . $basename;
     return $basename;
